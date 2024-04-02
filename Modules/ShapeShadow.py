@@ -83,7 +83,7 @@ class Sector(Shape):
         n = np.linspace(
             start=0, 
             stop=self.angle_sweep, 
-            num=int(self.angle_sweep * 12 / np.pi), 
+            num=int(self.angle_sweep * 12 / np.pi)+1, 
             endpoint=True
         )
 
@@ -115,7 +115,7 @@ class Ellipse(Shape):
     
 
     def _generate_(self) -> None:
-        a = np.linspace(0, 2*np.pi, 32+1, endpoint=True)
+        a = np.linspace(0, 2*np.pi, 24+1, endpoint=True)
 
         self.x = np.cos(a) * self.major/2
         self.y = np.sin(a) * self.minor/2
@@ -138,7 +138,7 @@ class Circle(Shape):
     
 
     def _generate_(self) -> None:
-        a = np.arange(0, 361, 15)
+        a = np.linspace(0, 2*np.pi, 24+1, endpoint=True)
 
         self.x = np.cos(a) * self.radius
         self.y = np.sin(a) * self.radius
