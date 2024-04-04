@@ -2,6 +2,31 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+class Move:
+    @staticmethod
+    def rotate(angle_deg:float, x:np.ndarray, y:np.ndarray) -> list[np.ndarray, np.ndarray]:
+
+        xy = np.asarray([x, y])
+        angle_rad = np.deg2rad(angle_deg)
+
+        A = np.asarray(
+                [[np.cos(angle_rad), -np.sin(angle_rad)],
+                [np.sin(angle_rad), np.cos(angle_rad)]]
+            )
+
+        xy_rotated = np.dot(A, xy)
+
+        return xy_rotated[0,:], xy_rotated[1,:]
+    
+    @staticmethod
+    def translate(x_offset:float, y_offset:float, x:np.ndarray, y:np.ndarray) -> list[np.ndarray, np.ndarray]:
+        x = x + x_offset
+        y = y + y_offset
+
+        return x, y
+
+
+
 class Shape(ABC):
     def __init__(self) -> None:
         self.x: np.ndarray
@@ -34,7 +59,7 @@ class Shape(ABC):
         pass
 
 
-    def rotate(self, angle: float):
+    def rotate(self, angle_deg: float):
         """
         Method for making rotational offset
         
@@ -42,18 +67,18 @@ class Shape(ABC):
         """
         
         xy = np.asarray([self.x, self.y])
-        rad = np.deg2rad(angle)
+        angle_rad = np.deg2rad(angle_deg)
 
         A = np.asarray(
-            [[np.cos(rad), -np.sin(rad)],
-            [np.sin(rad), np.cos(rad)]]
-        )
+                [[np.cos(angle_rad), -np.sin(angle_rad)],
+                [np.sin(angle_rad), np.cos(angle_rad)]]
+            )
 
         xy_rotated = np.dot(A, xy)
 
         self.x = xy_rotated[0,:]
         self.y = xy_rotated[1,:]
-
+        
         return self
     
     
@@ -69,6 +94,28 @@ class Shape(ABC):
     
 
 
+class Mask(Shape):
+    def __init__(self, x_coor:list, y_coor:list):
+        self.x_coor = x_coor
+        self.y_coor = y_coor
+
+        super(Mask, self).__init__()
+
+        return None
+    
+
+    def _generate_(self) -> None:
+        self.x = np.asarray(self.x_coor)
+        self.y = np.asarray(self.y_coor)
+
+        return None
+    
+
+    def area(self) -> None:
+        return None
+    
+    
+    
 class Sector(Shape):
     def __init__(self, radius:float, angle_sweep:float) -> None:
         self.radius = radius
@@ -80,7 +127,12 @@ class Sector(Shape):
     
     
     def _generate_(self):
-        n = np.linspace(0, self.angle_sweep, 50)
+        n = np.linspace(
+            start=0, 
+            stop=self.angle_sweep, 
+            num=int(self.angle_sweep * 12 / np.pi)+1, 
+            endpoint=True
+        )
 
         x = np.cos(n) * self.radius
         y = np.sin(n) * self.radius
@@ -110,10 +162,10 @@ class Ellipse(Shape):
     
 
     def _generate_(self) -> None:
-        a = np.linspace(0, 2*np.pi, 50, endpoint=True)
+        a = np.linspace(0, 2*np.pi, 24+1, endpoint=True)
 
-        self.x = np.cos(a) * self.major
-        self.y = np.sin(a) * self.minor
+        self.x = np.cos(a) * self.major/2
+        self.y = np.sin(a) * self.minor/2
 
         return None
     
@@ -133,7 +185,7 @@ class Circle(Shape):
     
 
     def _generate_(self) -> None:
-        a = np.linspace(0, 2*np.pi, 50, endpoint=True)
+        a = np.linspace(0, 2*np.pi, 24+1, endpoint=True)
 
         self.x = np.cos(a) * self.radius
         self.y = np.sin(a) * self.radius
@@ -228,6 +280,7 @@ def demo():
 
     plt.legend()
     plt.show()
+
 
 if __name__ == '__main__':
     demo()
