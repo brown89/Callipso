@@ -69,6 +69,28 @@ class Shape(ABC):
     
 
 
+class Mask(Shape):
+    def __init__(self, x_coor:list, y_coor:list):
+        self.x_coor = x_coor
+        self.y_coor = y_coor
+
+        super(Mask, self).__init__()
+
+        return None
+    
+
+    def _generate_(self) -> None:
+        self.x = np.asarray(self.x_coor)
+        self.y = np.asarray(self.y_coor)
+
+        return None
+    
+
+    def area(self) -> None:
+        return None
+    
+    
+    
 class Sector(Shape):
     def __init__(self, radius:float, angle_sweep:float) -> None:
         self.radius = radius

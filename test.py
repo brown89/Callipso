@@ -1,30 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-from Modules.ShapeShadow import Ellipse, Shape
+from Modules.ShapeShadow import Ellipse, Mask
 
-
-class Mask(Shape):
-    def __init__(self, x_coor:list, y_coor:list):
-        self.x_coor = x_coor
-        self.y_coor = y_coor
-
-        super(Mask, self).__init__()
-
-
-        return None
-    
-
-    def _generate_(self) -> None:
-        self.x = np.asarray(self.x_coor)
-        self.y = np.asarray(self.y_coor)
-
-        return None
-    
-
-    def area(self) -> None:
-        return None
-    
 
 
 def sector_mask(x:list, y:list, radius:float) -> list:
@@ -46,7 +24,7 @@ def sector_mask(x:list, y:list, radius:float) -> list:
     return x, y
 
 
-if __name__ == '__main__':
+def plot_lots_of_ellipse():
     x_range = np.linspace(0, 5, 25)
     y_range = np.linspace(0, 5, 25)
 
@@ -70,3 +48,7 @@ if __name__ == '__main__':
 
     ax.set_aspect('equal')  # Set the aspect 1:1
     plt.show()
+
+
+if __name__ == '__main__':
+    print("Yellow")

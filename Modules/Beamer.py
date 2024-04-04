@@ -1,49 +1,40 @@
 import numpy as np
 
-def area_ellipse(radius:float, grazing_angle:float) -> float:
+
+def _angle_check_(angle_incident) -> float:
+    if angle_incident >= 90:
+        angle_incident = angle_incident % 90
+        
+        print(f"WARNING: Grazing angle have been modulated to {angle_incident}")
+    return angle_incident
+
+
+def area(spot_diameter:float, angle_incident:float) -> float:
     """
-    Method for calculating the cross-sectional area of a cylinder at an angle i.e. ellipse
+    Return: area of the spot
+    """
+    angle_incident = _angle_check_(angle_incident)
+    return np.pi * (spot_diameter/2)**2 / np.cos(np.deg2rad(angle_incident))
+
+
+def elongation(spot_diameter:float, angle_incident:float) -> float:
+    """
+    Return: elongation of the spot
+    """
+    angle_incident = _angle_check_(angle_incident)
+    return spot_diameter / np.cos(np.deg2rad(angle_incident))
+
+
     
-    radius: radius of the incident beam
-    angle: angle between beam and plane normal
+class SpotCollection:
+    def __init__(self, x_coordinates:np.ndarray, y_coordinates:np.ndarray, spot_diameter:float, angle_incident:float) -> None:
+        self.x: np.ndarray = x_coordinates
+        self.y: np.ndarray = y_coordinates
 
-    return: area of ellipse
-    """
-
-    if grazing_angle >= 90:
-        raise ValueError("Grazing angle must be less than 90")
-
-    return np.pi * radius**2 / np.cos(np.deg2rad(grazing_angle))
+        self.angle_incident: float = angle_incident
+        self.diameter: float = spot_diameter
 
 
-def ellipse_ratio(minor:float, theta:float) -> float:
-    """
-    Function for calculating the ratio between minor axis in a ellipse to the angle of incedense
-    
-    minor: minor axis of ellipse
-    theta: angle of incedense
-
-    return: major axis of ellipse
-    """
-    return minor / np.cos(np.deg2rad(theta))
-
-
-def test_area_ellipse():
-    angles = [0, 25, 35, 45, 55, 65, 75, 80, 85, 89]
-
-    for angle in angles:
-        area = area_ellipse(1, angle)
-
-        print(f"Angle: {angle:.1f}, area: {area:.1f}")
-
-
-def test_ab_ratio():
-    angles = [0, 10, 30, 65, 75]
-
-    for angle in angles:
-        b = ellipse_ratio(minor=300, theta=angle)
-
-        print(f"300:{b:.2f}, angle: {angle:.2f}")
 
 if __name__ == '__main__':
-    test_ab_ratio()
+    print("Yellow world")
