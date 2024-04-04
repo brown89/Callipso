@@ -1,6 +1,10 @@
 import numpy as np
 
-from ShapeShadow import Move, Ellipse
+if __name__ == '__main__':
+    from ShapeShadow import Move, Ellipse
+
+else:
+    from Modules.ShapeShadow import Move, Ellipse
 
 
 class Spot:
