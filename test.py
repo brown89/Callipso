@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -52,10 +53,14 @@ def plot_lots_of_ellipse():
 
 
 if __name__ == '__main__':
-    import pandas as pd
+    from dotenv import load_dotenv
+    
+    load_dotenv('.env')
 
+    DATA_PATH = os.getenv("DATA_PATH")
+    if not os.path.exists(DATA_PATH):
+        raise FileNotFoundError(DATA_PATH)
 
-    DATA_PATH = r"C:\Users\BjoernSchytzBruun\OneDrive - RadiSurf ApS\Dokumenter - Shared Drive\Working folders\Bjoern_WorkingFolder\Programming\Python\Ellipsometry\data\MPI003-1_fp_1143pt.txt"
     jaw = JAW(DATA_PATH)  # loads data
     jaw.data = jaw.data.dropna()
 

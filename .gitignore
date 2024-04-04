@@ -1,7 +1,3 @@
-# Private stuff
-test.py
-Alignment.ipynb
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
