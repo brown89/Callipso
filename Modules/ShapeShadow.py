@@ -2,6 +2,31 @@ from abc import ABC, abstractmethod
 import numpy as np
 
 
+class Move:
+    @staticmethod
+    def rotate(angle_deg:float, x:np.ndarray, y:np.ndarray) -> list[np.ndarray, np.ndarray]:
+
+        xy = np.asarray([x, y])
+        angle_rad = np.deg2rad(angle_deg)
+
+        A = np.asarray(
+                [[np.cos(angle_rad), -np.sin(angle_rad)],
+                [np.sin(angle_rad), np.cos(angle_rad)]]
+            )
+
+        xy_rotated = np.dot(A, xy)
+
+        return xy_rotated[0,:], xy_rotated[1,:]
+    
+    @staticmethod
+    def translate(x_offset:float, y_offset:float, x:np.ndarray, y:np.ndarray) -> list[np.ndarray, np.ndarray]:
+        x = x + x_offset
+        y = y + y_offset
+
+        return x, y
+
+
+
 class Shape(ABC):
     def __init__(self) -> None:
         self.x: np.ndarray
@@ -34,7 +59,7 @@ class Shape(ABC):
         pass
 
 
-    def rotate(self, angle: float):
+    def rotate(self, angle_deg: float):
         """
         Method for making rotational offset
         
@@ -42,18 +67,18 @@ class Shape(ABC):
         """
         
         xy = np.asarray([self.x, self.y])
-        rad = np.deg2rad(angle)
+        angle_rad = np.deg2rad(angle_deg)
 
         A = np.asarray(
-            [[np.cos(rad), -np.sin(rad)],
-            [np.sin(rad), np.cos(rad)]]
-        )
+                [[np.cos(angle_rad), -np.sin(angle_rad)],
+                [np.sin(angle_rad), np.cos(angle_rad)]]
+            )
 
         xy_rotated = np.dot(A, xy)
 
         self.x = xy_rotated[0,:]
         self.y = xy_rotated[1,:]
-
+        
         return self
     
     
@@ -255,6 +280,7 @@ def demo():
 
     plt.legend()
     plt.show()
+
 
 if __name__ == '__main__':
     demo()
