@@ -65,20 +65,9 @@ class Shape(ABC):
         
         angle: degrees of rotation counter clockwise
         """
-        
-        xy = np.asarray([self.x, self.y])
-        angle_rad = np.deg2rad(angle_deg)
 
-        A = np.asarray(
-                [[np.cos(angle_rad), -np.sin(angle_rad)],
-                [np.sin(angle_rad), np.cos(angle_rad)]]
-            )
-
-        xy_rotated = np.dot(A, xy)
-
-        self.x = xy_rotated[0,:]
-        self.y = xy_rotated[1,:]
-        
+        self.x, self.y = Move.rotate(angle_deg, self.x, self.y)
+                
         return self
     
     
@@ -87,8 +76,7 @@ class Shape(ABC):
         Method for making translational offset
         """
         
-        self.x = self.x + x_offset
-        self.y = self.y + y_offset
+        self.x, self.y = Move.translate(x_offset, y_offset, self.x, self.y)
 
         return self
     

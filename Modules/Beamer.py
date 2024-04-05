@@ -10,6 +10,9 @@ else:
 class Spot:
     @staticmethod
     def angle_check(angle_incident:float) -> float:
+        """
+        Function for checking incident angle. Angle equal to 90 or above will be modulated by 90, i.e. 105 deg -> 15 deg
+        """
         if angle_incident >= 90:
             angle_incident = angle_incident % 90
 
@@ -18,7 +21,11 @@ class Spot:
 
 
     def __init__(self, diameter:float, angle_incident:float) -> None:
-
+        """
+        diameter: diameter of the spot at 0 deg incident
+        angle_incident: angle of incident in degrees
+        """
+        
         angle_incident = Spot.angle_check(angle_incident)
 
         self.diameter = diameter
@@ -45,9 +52,17 @@ class Spot:
 
     
 class MapPattern:
-    def __init__(self, x_coordinates:np.ndarray, y_coordinates:np.ndarray, x_offset:float, y_offset:float, theta_offset:float) -> None:
-        self.x = x_coordinates
-        self.y = y_coordinates
+    def __init__(self, x:np.ndarray, y:np.ndarray, x_offset:float, y_offset:float, theta_offset:float) -> None:
+        """
+        x: x coordinates of the map pattern 
+        y: y coordinates of the map pattern
+        x_offset: x offset
+        y_offset: y offset
+        theta_offset: theta angle offset in degrees
+        """
+        
+        self.x = x
+        self.y = y
         
         self.x_offset = x_offset
         self.y_offset = y_offset
@@ -56,7 +71,7 @@ class MapPattern:
         return None
     
 
-    def count(self):
+    def count(self) -> int:
         """
         Returns the number of measurements
         """
@@ -65,6 +80,12 @@ class MapPattern:
     
 
     def offset(self) -> list[np.ndarray, np.ndarray]:
+        """
+        Applies the map pattern offset and returns two np.ndarrays with x and y coordinates
+        
+        NOTE: Data is NOT overwritten
+        """
+        
         x, y = Move.rotate(self.theta_offset, self.x, self.y)
         x, y = Move.translate(self.x_offset, self.y_offset, x, y)
         
@@ -73,6 +94,10 @@ class MapPattern:
 
 
 class SpotCollection:
+    """
+    Class for applying spot information to map patterns.
+    """
+
     def __init__(self, map_pattern:MapPattern, spot:Spot) -> None:
         self.map_pattern = map_pattern
         self.spot = spot
@@ -89,15 +114,22 @@ class SpotCollection:
     
 
     def outlines(self) -> list[Ellipse]:
-        minor = self.spot.diameter
+        """
+        Returns a list of Ellipse objects centered on the coordiantes specified in the supplied MapPatternf
+
+        NOTE: Offset in the map pattern is applied prior to creating the Ellipse object
+        """
+        
+        # Setting major and minor of Ellipse object
         major = self.spot.elongation()
+        minor = self.spot.diameter
 
-        xs, ys = self.map_pattern.offset()
+        xs, ys = self.map_pattern.offset()  # Applying offset
+
         ellipse_obj = []
-
         for x, y in zip(xs, ys):
-            ellipse = Ellipse(major=major, minor=minor)
-            ellipse.translate(x, y)
+            ellipse = Ellipse(major=major, minor=minor)  # Creating object
+            ellipse.translate(x, y)  # Centering ellipse on map pattern
 
             ellipse_obj.append(ellipse)
 
