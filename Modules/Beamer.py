@@ -1,8 +1,5 @@
 import numpy as np
 
-from ShapeShadow import Ellipse
-
-
 if __name__ == '__main__':
     from ShapeShadow import Move, Ellipse
 
@@ -78,6 +75,8 @@ class MapPattern:
         self.x_inst: np.ndarray
         self.y_inst: np.ndarray
 
+        self._gen_instrument_xy_()
+        
         return None
     
 
@@ -150,16 +149,6 @@ class SpotCollection:
     
 
 
+
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
-    map_pattern = MapPattern(np.array([0, 1, 1, 0]), np.array([0, 0, 1, 1]), -.5, -.5, 30)
-    spot = Spot(.3, 65)
-    spot_collection = SpotCollection(map_pattern=map_pattern, spot=spot)
-    
-    fig, ax = plt.subplots()
-    for spot in spot_collection.outlines():
-        ax.plot(spot.x, spot.y, '-k')
-
-    ax.set_aspect('equal')  # Set the aspect 1:1
-    plt.show()
+    print("This is a test")

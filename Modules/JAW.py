@@ -59,7 +59,7 @@ def first_line_of_data(filename:str, match_pattern:str) -> int:
 
         # Stops if first character is a match for 'match_pattern'
         if line[0] == match_pattern:
-            i = start_of_data
+            start_of_data = i
             break
     
     return start_of_data
