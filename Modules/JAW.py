@@ -9,7 +9,7 @@ BEAM_SIZE_WITHOUT_FOCUS_PROBES = 0.3
 
 SUPPORTED_FILE_EXTENSIONS = ['*.txt']
 
-DATA_HEAD_NAMES = {
+HEAD_NAMES = {
     'Point #': 'n_points',
     'Z Align': 'z_align',
     'SigInt': 'sig_int',
@@ -27,10 +27,12 @@ DATA_HEAD_NAMES = {
 
 def is_valid(filename:str) -> bool:
     """
-    Function for validating file. Can raise one of two errors:
+    Function for validating file and extension is supported.
     
     FileNotFoundError if file does not exist
+    
     -or-
+    
     ValueError if file type not supported
     """
     
@@ -46,7 +48,7 @@ def is_valid(filename:str) -> bool:
     return True
 
 
-def first_line_of_data(filename:str, match_pattern:str) -> int:
+def _first_line_of_data_(filename:str, match_pattern:str) -> int:
     """
     Finds the line where data begins."""
     # Read file line by line
@@ -65,46 +67,44 @@ def first_line_of_data(filename:str, match_pattern:str) -> int:
     return start_of_data
     
 
-
-def read_text_file(filename:str) -> pd.DataFrame:
-    """
-    Read file and extracts x and y coordinates
-
-    Returns a DataFrame
-    """
-
-    # Find where data starts
-    start_of_data = first_line_of_data(filename, '(')
-
-    # Read file into DataFrame
-    data = pd.read_csv(filename, sep="\t", header=0, skiprows=range(1, start_of_data))
-    
+def _extract_xy_coordinates_(dataframe:pd.DataFrame) -> pd.DataFrame:
     # Add x and y column
     x_list, y_list = [], []
-    for xy in data.iloc[:, 0].values.tolist():
+    for xy in dataframe.iloc[:, 0].values.tolist():
         x, y = re.findall(r"[-+]?(?:\d*\.*\d+)", xy)
         
         x_list.append(float(x))
         y_list.append(float(y))
 
     # Setting new columns with x and y values
-    data['x'] = x_list
-    data['y'] = y_list
+    dataframe['x'] = x_list
+    dataframe['y'] = y_list
+
+    return dataframe
+
+
+def read_jaw_file(filename:str) -> pd.DataFrame:
+    """
+    Function for reading the text version of the J.A.Woollam files
+
+    Headers are renamed according with the HEAD_NAMES
+
+    NOTE: The x and y coordinates are extracted from the 1st column and saved in an x and y column.
+    """
+
+    # Check if filename is valid
+    is_valid(filename)
+    
+    # Find where data starts
+    start_of_data = _first_line_of_data_(filename, '(')
+
+    # Read file into DataFrame
+    data = pd.read_csv(filename, sep="\t", header=0, skiprows=range(1, start_of_data))
+    
+    # Extract x and y coordinates
+    data = _extract_xy_coordinates_(data)
 
     # Drops 1st column with old (x, y) coordinates
     data.drop(columns=data.columns[0], axis=1,  inplace=True)
 
-    return data
-
-
-
-class JAW:
-    def __init__(self, filename: str):
-
-        is_valid(filename)  # Validate file
-
-        self.filename = filename
-        self.name = os.path.basename(filename)
-
-        data = read_text_file(filename)
-        self.data = data.rename(DATA_HEAD_NAMES)
+    return data.rename(HEAD_NAMES)
