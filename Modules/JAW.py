@@ -4,6 +4,9 @@ import pandas as pd
 
 SUPPORTED_FILE_EXTENSIONS = ['*.txt']
 
+BEAM_SIZE_WITH_FOCUS_PROBES = 0.03
+BEAM_SIZE_WITHOUT_FOCUS_PROBES = 0.3
+
 
 def is_valid(filename):
     """

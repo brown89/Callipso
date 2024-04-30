@@ -68,8 +68,17 @@ class MapPattern:
         self.y_offset = y_offset
         self.theta_offset = theta_offset
 
+        self.x_inst: np.ndarray
+        self.y_inst: np.ndarray
+
         return None
     
+
+    def _gen_instrument_xy_(self):
+        x, y = Move.rotate(self.theta_offset, self.x, self.y)
+        self.x_inst, self.y_inst = Move.translate(self.x_offset, self.y_offset, x, y)
+
+        return None
 
     def count(self) -> int:
         """
@@ -86,10 +95,7 @@ class MapPattern:
         NOTE: Data is NOT overwritten
         """
         
-        x, y = Move.rotate(self.theta_offset, self.x, self.y)
-        x, y = Move.translate(self.x_offset, self.y_offset, x, y)
-        
-        return x, y
+        return self.x_inst, self.y_inst
 
 
 
