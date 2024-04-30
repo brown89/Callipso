@@ -7,7 +7,7 @@ else:
     from Modules.ShapeShadow import Move, Ellipse
 
 
-class Spot:
+class Spot(Ellipse):
     @staticmethod
     def angle_check(angle_incident:float) -> float:
         """
@@ -20,28 +20,32 @@ class Spot:
         return angle_incident
 
 
-    def __init__(self, diameter:float, angle_incident:float) -> None:
+    @staticmethod
+    def _major_(angle_incident:float, minor:float) -> float:
+        """
+        Calculates the major in an ellipse
+        """
+        return minor / np.cos(np.deg2rad(angle_incident))
+
+
+    def __init__(self, beam_diameter:float, angle_incident:float) -> None:
         """
         diameter: diameter of the spot at 0 deg incident
         angle_incident: angle of incident in degrees
         """
         
         angle_incident = Spot.angle_check(angle_incident)
-
-        self.diameter = diameter
+        minor = beam_diameter
+        major = self._major_(angle_incident, beam_diameter)
+        
+        self.diameter = beam_diameter
         self.angle_incident = angle_incident
 
+        super(Spot, self).__init__(major, minor)
+        
         return None
     
     
-    def area(self) -> float:
-        """
-        Return: area of the spot
-        """
-        
-        return np.pi * (self.diameter/2)**2 / np.cos(np.deg2rad(self.angle_incident))
-
-
     def elongation(self) -> float:
         """
         Return: elongation of the spot
@@ -68,8 +72,19 @@ class MapPattern:
         self.y_offset = y_offset
         self.theta_offset = theta_offset
 
+        self.x_inst: np.ndarray
+        self.y_inst: np.ndarray
+
+        self._gen_instrument_xy_()
+        
         return None
     
+
+    def _gen_instrument_xy_(self):
+        x, y = Move.rotate(self.theta_offset, self.x, self.y)
+        self.x_inst, self.y_inst = Move.translate(self.x_offset, self.y_offset, x, y)
+
+        return None
 
     def count(self) -> int:
         """
@@ -86,10 +101,7 @@ class MapPattern:
         NOTE: Data is NOT overwritten
         """
         
-        x, y = Move.rotate(self.theta_offset, self.x, self.y)
-        x, y = Move.translate(self.x_offset, self.y_offset, x, y)
-        
-        return x, y
+        return self.x_inst, self.y_inst
 
 
 
@@ -137,16 +149,6 @@ class SpotCollection:
     
 
 
+
 if __name__ == '__main__':
-    import matplotlib.pyplot as plt
-
-    map_pattern = MapPattern(np.array([0, 1, 1, 0]), np.array([0, 0, 1, 1]), -.5, -.5, 30)
-    spot = Spot(.3, 65)
-    spot_collection = SpotCollection(map_pattern=map_pattern, spot=spot)
-    
-    fig, ax = plt.subplots()
-    for spot in spot_collection.outlines():
-        ax.plot(spot.x, spot.y, '-k')
-
-    ax.set_aspect('equal')  # Set the aspect 1:1
-    plt.show()
+    print("This is a test")
