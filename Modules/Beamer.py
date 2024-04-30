@@ -1,5 +1,8 @@
 import numpy as np
 
+from ShapeShadow import Ellipse
+
+
 if __name__ == '__main__':
     from ShapeShadow import Move, Ellipse
 
@@ -7,7 +10,7 @@ else:
     from Modules.ShapeShadow import Move, Ellipse
 
 
-class Spot:
+class Spot(Ellipse):
     @staticmethod
     def angle_check(angle_incident:float) -> float:
         """
@@ -20,28 +23,32 @@ class Spot:
         return angle_incident
 
 
-    def __init__(self, diameter:float, angle_incident:float) -> None:
+    @staticmethod
+    def _major_(angle_incident:float, minor:float) -> float:
+        """
+        Calculates the major in an ellipse
+        """
+        return minor / np.cos(np.deg2rad(angle_incident))
+
+
+    def __init__(self, beam_diameter:float, angle_incident:float) -> None:
         """
         diameter: diameter of the spot at 0 deg incident
         angle_incident: angle of incident in degrees
         """
         
         angle_incident = Spot.angle_check(angle_incident)
-
-        self.diameter = diameter
+        minor = beam_diameter
+        major = self._major_(angle_incident, beam_diameter)
+        
+        self.diameter = beam_diameter
         self.angle_incident = angle_incident
 
+        super(Spot, self).__init__(major, minor)
+        
         return None
     
     
-    def area(self) -> float:
-        """
-        Return: area of the spot
-        """
-        
-        return np.pi * (self.diameter/2)**2 / np.cos(np.deg2rad(self.angle_incident))
-
-
     def elongation(self) -> float:
         """
         Return: elongation of the spot
