@@ -18,6 +18,7 @@ HEAD_NAMES = {
     'Hardware OK': 'hardware_ok',
     'MSE': 'mse',
     'Thickness # 1 (nm)': 'thickness_nm',
+    'n of Cauchy @ 632.8 nm': 'n_cauchy_632nm',
     'A': 'a',
     'B': 'b',
     'C': 'c',
@@ -83,6 +84,17 @@ def _extract_xy_coordinates_(dataframe:pd.DataFrame) -> pd.DataFrame:
     return dataframe
 
 
+def _rename_columns_(dataframe:pd.DataFrame) -> pd.DataFrame:
+    rename = {}
+    for name in dataframe.columns:
+        rename[name] = name.strip()
+    
+    dataframe.rename(rename, inplace=True)
+    dataframe.rename(HEAD_NAMES, inplace=True)
+
+    return dataframe
+
+
 def read_jaw_file(filename:str) -> pd.DataFrame:
     """
     Function for reading the text version of the J.A.Woollam files
@@ -107,4 +119,4 @@ def read_jaw_file(filename:str) -> pd.DataFrame:
     # Drops 1st column with old (x, y) coordinates
     data.drop(columns=data.columns[0], axis=1,  inplace=True)
 
-    return data.rename(HEAD_NAMES)
+    return _rename_columns_(data)
