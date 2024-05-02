@@ -7,8 +7,12 @@ import pandas as pd
 BEAM_SIZE_WITH_FOCUS_PROBES = 0.03
 BEAM_SIZE_WITHOUT_FOCUS_PROBES = 0.3
 
-SUPPORTED_FILE_EXTENSIONS = ['*.txt']
+# Types of supported file formats
+SUPPORTED_FILE_EXTENSIONS = [
+    '*.txt',
+]
 
+# Header renaming schema
 HEAD_NAMES = {
     'Point #': 'n_points',
     'Z Align': 'z_align',
@@ -89,8 +93,8 @@ def _rename_columns_(dataframe:pd.DataFrame) -> pd.DataFrame:
     for name in dataframe.columns:
         rename[name] = name.strip()
     
-    dataframe.rename(rename, inplace=True)
-    dataframe.rename(HEAD_NAMES, inplace=True)
+    dataframe.rename(rename, axis=1, inplace=True)
+    dataframe.rename(HEAD_NAMES, axis=1, inplace=True)
 
     return dataframe
 
@@ -120,3 +124,18 @@ def read_jaw_file(filename:str) -> pd.DataFrame:
     data.drop(columns=data.columns[0], axis=1,  inplace=True)
 
     return _rename_columns_(data)
+
+
+if __name__ == '__main__':
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    DATA = os.getenv('LAERKE_DATA')
+    
+
+    jaw = read_jaw_file(DATA)
+
+    for col in jaw.columns:
+        print(col)
+    """
+    """
