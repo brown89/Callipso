@@ -7,10 +7,12 @@ import pandas as pd
 BEAM_SIZE_WITH_FOCUS_PROBES = 0.03
 BEAM_SIZE_WITHOUT_FOCUS_PROBES = 0.3
 
+
 # Types of supported file formats
 SUPPORTED_FILE_EXTENSIONS = [
     '*.txt',
 ]
+
 
 # Header renaming schema
 HEAD_NAMES = {
@@ -89,17 +91,6 @@ def _extract_xy_coordinates_(dataframe:pd.DataFrame) -> pd.DataFrame:
     return dataframe
 
 
-def _rename_columns_(dataframe:pd.DataFrame) -> pd.DataFrame:
-    rename = {}
-    for name in dataframe.columns:
-        rename[name] = name.strip()
-    
-    dataframe.rename(rename, axis=1, inplace=True)
-    dataframe.rename(HEAD_NAMES, axis=1, inplace=True)
-
-    return dataframe
-
-
 def read_jaw_file(filename:str) -> pd.DataFrame:
     """
     Function for reading the text version of the J.A.Woollam files
@@ -124,4 +115,4 @@ def read_jaw_file(filename:str) -> pd.DataFrame:
     # Drops 1st column with old (x, y) coordinates
     data.drop(columns=data.columns[0], axis=1,  inplace=True)
 
-    return _rename_columns_(data)
+    return data.rename(mapper=str.strip, axis='columns')
