@@ -55,7 +55,8 @@ def is_valid(filename:str) -> bool:
 
 def _first_line_of_data_(filename:str, match_pattern:str) -> int:
     """
-    Finds the line where data begins."""
+    Finds the line where data begins.
+    """
     # Read file line by line
     with open(filename, 'r') as f:
         file = f.readlines()
@@ -124,18 +125,3 @@ def read_jaw_file(filename:str) -> pd.DataFrame:
     data.drop(columns=data.columns[0], axis=1,  inplace=True)
 
     return _rename_columns_(data)
-
-
-if __name__ == '__main__':
-    from dotenv import load_dotenv
-
-    load_dotenv()
-    DATA = os.getenv('LAERKE_DATA')
-    
-
-    jaw = read_jaw_file(DATA)
-
-    for col in jaw.columns:
-        print(col)
-    """
-    """
