@@ -55,7 +55,7 @@ def is_valid(filename:str) -> bool:
     return True
 
 
-def _first_line_of_data_(filename:str, match_pattern:str) -> int:
+def first_line_of_data(filename:str, match_pattern:str) -> int:
     """
     Finds the line where data begins.
     """
@@ -104,7 +104,7 @@ def read_jaw_file(filename:str) -> pd.DataFrame:
     is_valid(filename)
     
     # Find where data starts
-    start_of_data = _first_line_of_data_(filename, '(')
+    start_of_data = first_line_of_data(filename, '(')
 
     # Read file into DataFrame
     data = pd.read_csv(filename, sep="\t", header=0, skiprows=range(1, start_of_data))
@@ -115,4 +115,6 @@ def read_jaw_file(filename:str) -> pd.DataFrame:
     # Drops 1st column with old (x, y) coordinates
     data.drop(columns=data.columns[0], axis=1,  inplace=True)
 
-    return data.rename(mapper=str.strip, axis='columns')
+    data.rename(mapper=str.strip, axis='columns')
+
+    return data.rename(mapper=HEAD_NAMES, axis='columns')
