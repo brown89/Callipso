@@ -20,7 +20,7 @@ class Shape(ABC):
 
 
 class Circle(Shape):
-    def __init__(self, x:float, y:float, radius: float, kwargs) -> None:
+    def __init__(self, x:float, y:float, radius: float, **kwargs) -> None:
         self.center = [x, y]
         self.radius = radius
         self.kwargs = kwargs
@@ -30,14 +30,14 @@ class Circle(Shape):
 
     def get_patch(self) -> patches.Patch:
         return patches.Circle(
-            center=self.center,
+            xy=self.center,
             radius=self.radius,
             **self.kwargs
         )
 
 
 class Ellipse(Shape):
-    def __init__(self, x:float, y:float, width:float, height:float, angle:float, kwargs):
+    def __init__(self, x:float, y:float, width:float, height:float, angle:float, **kwargs):
         self.center = [x, y]
         self.width = width
         self.height = height
@@ -59,7 +59,7 @@ class Ellipse(Shape):
 
 
 class Sector(Shape):
-    def __init__(self, x:float, y:float, radius:float, start_angle:float, end_angle:float, kwargs):
+    def __init__(self, x:float, y:float, radius:float, start_angle:float, end_angle:float, **kwargs):
         self.center = [x, y]
         self.radius = radius
         self.start_angle = start_angle
@@ -82,4 +82,15 @@ class Sector(Shape):
 
 
 if __name__ == '__main__':
-    print("Yellow")
+    import matplotlib.pyplot as plt
+
+    kwargs = {'fill': False}
+    circle = Circle(0.1, 0.25, 0.5, **kwargs)
+    ellipse = Ellipse(-0.2, -0.125, 0.3, 0.45, 30)
+
+    fig, ax = plt.subplots()
+    circle.plot(ax)
+    ellipse.plot(ax)
+
+    ax.set_aspect("equal")
+    plt.show()
