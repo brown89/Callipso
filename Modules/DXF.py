@@ -54,7 +54,7 @@ def add_line(line:ezdxf.entities.Line) -> Patch:
 
 
 def plot(dxf_filename:str, ax_handle:Axes) -> None:
-    doc = ezdxf.readfile(dxf_filename)
+    doc = ezdxf.readfile(dxf_filename)    
     msp = doc.modelspace()
 
     for entity in msp:

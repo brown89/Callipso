@@ -33,10 +33,6 @@ HEAD_NAMES = {
 }
 
 
-def plot_stage(ax_handle:Axes) -> None:
-    
-    return None
-
 
 def is_valid(filename:str) -> bool:
     """
