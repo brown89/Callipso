@@ -1,274 +1,85 @@
 from abc import ABC, abstractmethod
-import numpy as np
-
-
-class Move:
-    @staticmethod
-    def rotate(angle_deg:float, x:np.ndarray, y:np.ndarray) -> list[np.ndarray, np.ndarray]:
-
-        xy = np.asarray([x, y])
-        angle_rad = np.deg2rad(angle_deg)
-
-        A = np.asarray(
-                [[np.cos(angle_rad), -np.sin(angle_rad)],
-                [np.sin(angle_rad), np.cos(angle_rad)]]
-            )
-
-        xy_rotated = np.dot(A, xy)
-
-        return xy_rotated[0,:], xy_rotated[1,:]
-    
-    @staticmethod
-    def translate(x_offset:float, y_offset:float, x:np.ndarray, y:np.ndarray) -> list[np.ndarray, np.ndarray]:
-        x = x + x_offset
-        y = y + y_offset
-
-        return x, y
-
+from matplotlib.axes import Axes
+from matplotlib import patches
 
 
 class Shape(ABC):
     def __init__(self) -> None:
-        self.x: np.ndarray
-        self.y: np.ndarray
-
-        self._generate_()
-
         return None
     
-    
+
     @abstractmethod
-    def _generate_(self) -> None:
-        """
-        Method for generating initial base shape
-        
-        NOTE: abstract methods MUST be implemented in child class
-        """
-        
-        pass
-    
-    
-    @abstractmethod
-    def area(self) -> float:
-        """
-        Method for calculating area of the shape
-        
-        NOTE: abstract methods MUST be implemented in child class
-        """
-        
+    def get_patch(self) -> patches.Patch:
         pass
 
 
-    def rotate(self, angle_deg: float):
-        """
-        Method for making rotational offset
-        
-        angle: degrees of rotation counter clockwise
-        """
-
-        self.x, self.y = Move.rotate(angle_deg, self.x, self.y)
-                
-        return self
-    
-    
-    def translate(self, x_offset: float, y_offset: float):
-        """
-        Method for making translational offset
-        """
-        
-        self.x, self.y = Move.translate(x_offset, y_offset, self.x, self.y)
-
-        return self
-    
-
-
-class Mask(Shape):
-    def __init__(self, x_coor:list, y_coor:list):
-        self.x_coor = x_coor
-        self.y_coor = y_coor
-
-        super(Mask, self).__init__()
+    def plot(self, axes:Axes) -> None:
+        axes.add_patch(self.get_patch())
 
         return None
-    
-
-    def _generate_(self) -> None:
-        self.x = np.asarray(self.x_coor)
-        self.y = np.asarray(self.y_coor)
-
-        return None
-    
-
-    def area(self) -> None:
-        return None
-    
-    
-    
-class Sector(Shape):
-    def __init__(self, radius:float, angle_sweep:float) -> None:
-        self.radius = radius
-        self.angle_sweep = np.deg2rad(angle_sweep)
-
-        super(Sector, self).__init__()
-
-        return None
-    
-    
-    def _generate_(self):
-        n = np.linspace(
-            start=0, 
-            stop=self.angle_sweep, 
-            num=int(self.angle_sweep * 12 / np.pi)+1, 
-            endpoint=True
-        )
-
-        x = np.cos(n) * self.radius
-        y = np.sin(n) * self.radius
-
-        x = np.insert(x, 0, 0)
-        y = np.insert(y, 0, 0)
-
-        self.x = np.append(x, 0)
-        self.y = np.append(y, 0)
-
-        return None
-    
-
-    def area(self) -> float:
-        return (self.angle_sweep / 2) * self.radius ** 2
-    
-        
-
-class Ellipse(Shape):
-    def __init__(self, major: float, minor: float) -> None:
-        self.major = major
-        self.minor = minor
-
-        super(Ellipse, self).__init__()
-
-        return None
-    
-
-    def _generate_(self) -> None:
-        a = np.linspace(0, 2*np.pi, 24+1, endpoint=True)
-
-        self.x = np.cos(a) * self.major/2
-        self.y = np.sin(a) * self.minor/2
-
-        return None
-    
-
-    def area(self) -> float:
-        return np.pi * self.major * self.minor
-
 
 
 class Circle(Shape):
-    def __init__(self, radius: float) -> None:
+    def __init__(self, x:float, y:float, radius: float, kwargs) -> None:
+        self.center = [x, y]
         self.radius = radius
+        self.kwargs = kwargs
 
-        super(Circle, self).__init__()
-
-        return None
+        super().__init__()
     
 
-    def _generate_(self) -> None:
-        a = np.linspace(0, 2*np.pi, 24+1, endpoint=True)
-
-        self.x = np.cos(a) * self.radius
-        self.y = np.sin(a) * self.radius
-
-        return None
-    
-
-    def area(self) -> float:
-        return np.pi * self.radius ** 2
+    def get_patch(self) -> patches.Patch:
+        return patches.Circle(
+            center=self.center,
+            radius=self.radius,
+            **self.kwargs
+        )
 
 
-
-class Rectangle(Shape):
-    def __init__(self, width: float, height: float, centered: bool=True) -> None:
+class Ellipse(Shape):
+    def __init__(self, x:float, y:float, width:float, height:float, angle:float, kwargs):
+        self.center = [x, y]
         self.width = width
         self.height = height
-        self.centered = centered
+        self.angle = angle
+        self.kwargs = kwargs
 
-        super(Rectangle, self).__init__()
-    
-    def _generate_(self) -> None:
-        self.x = np.array([0, self.width, self.width, 0, 0])
-        self.y = np.array([0, 0, self.height, self.height, 0])
+        super().__init__()
 
-        if self.centered:
-            self.translate(-self.width/2, -self.height/2)
-        
-        return None
     
 
-    def area(self) -> float:
-        return self.width * self.height
-    
-
-
-class Square(Rectangle):
-    def __init__(self, width: float, centered: bool=True) -> None:
-        super(Square, self).__init__(width, width, centered)
-
-        return None
-
-
-
-def demo():
-    import matplotlib.pyplot as plt
-    
-    n = 5
-
-    angle = np.random.rand(n) * 90
-    x_disp = np.random.rand(n) * 20 - 10
-    y_disp = np.random.rand(n) * 20 - 10
-
-    sector = Sector(radius=5, angle_sweep=45)
-    sector.rotate(angle[0]).translate(x_disp[0], y_disp[0])
-
-    rectangle = Rectangle(width=2, height=5)
-    rectangle.rotate(angle[1]).translate(x_disp[1], y_disp[1])
-
-    square = Square(width=3)
-    square.rotate(angle[2]).translate(x_disp[2], y_disp[2])
-
-    circle = Circle(radius=3)
-    circle.translate(x_disp[3], y_disp[3])
-
-    ellipse = Ellipse(major=3, minor=1)
-    ellipse.rotate(angle[4]).translate(x_disp[4], y_disp[4])
-
-    # Plotting figure
-    fig, ax = plt.subplots()
-    ax.plot(sector.x, sector.y, '-g', 
-            alpha=0.5, 
-            label=f"A: {angle[0]:.1f}, Tx: {x_disp[0]:.1f}, Ty: {y_disp[0]:.1f}"
+    def get_patch(self) -> patches.Patch:
+        return patches.Ellipse(
+            xy=self.center,
+            width=self.width,
+            height=self.height,
+            angle=self.angle,
+            **self.kwargs
         )
-    ax.plot(rectangle.x, rectangle.y, '-r', 
-            alpha=0.5, 
-            label=f"A: {angle[1]:.1f}, Tx: {x_disp[1]:.1f}, Ty: {y_disp[1]:.1f}"
-        )
-    ax.plot(square.x, square.y, '-b', 
-            alpha=0.5, 
-            label=f"A: {angle[2]:.1f}, Tx: {x_disp[2]:.1f}, Ty: {y_disp[2]:.1f}"
-        )
-    ax.plot(circle.x, circle.y, '-k', 
-            alpha=0.5, 
-            label=f"A: {angle[3]:.1f}, Tx: {x_disp[3]:.1f}, Ty: {y_disp[3]:.1f}"
-        )    
-    ax.plot(ellipse.x, ellipse.y, '-m',
-            alpha=0.5,
-            label=f"A: {angle[4]:.1f}, Tx: {x_disp[4]:.1f}, Ty: {y_disp[4]:.1f}"
-            )
 
-    ax.set_aspect('equal')  # Set the aspect 1:1
 
-    plt.legend()
-    plt.show()
+class Sector(Shape):
+    def __init__(self, x:float, y:float, radius:float, start_angle:float, end_angle:float, kwargs):
+        self.center = [x, y]
+        self.radius = radius
+        self.start_angle = start_angle
+        self.end_angle = end_angle
+        self.kwargs = kwargs
+
+        super().__init__()
+
+    
+
+    def get_patch(self) -> patches.Patch:
+        return patches.Wedge(
+            center=self.center,
+            r=self.radius,
+            theta1=self.start_angle,
+            theta2=self.end_angle,
+            **self.kwargs
+        )
+
 
 
 if __name__ == '__main__':
-    demo()
+    print("Yellow")
