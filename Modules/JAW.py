@@ -1,6 +1,7 @@
 import os
 import re
 import pandas as pd
+from matplotlib.axes import Axes
 
 
 # Ellipsometer specific constants
@@ -30,6 +31,11 @@ HEAD_NAMES = {
     'C': 'c',
     'Fit OK': 'fit_ok', 
 }
+
+
+def plot_stage(ax_handle:Axes) -> None:
+    
+    return None
 
 
 def is_valid(filename:str) -> bool:
