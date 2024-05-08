@@ -1,6 +1,5 @@
 import ezdxf
 import ezdxf.entities
-import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.patches import Arc, Circle, Patch, Polygon
 
