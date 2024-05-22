@@ -218,8 +218,7 @@ if __name__ == '__main__':
         [0, 1, 1, 0]
         ])
     
-    sector_kwargs = Temp.SAMPLE
-    sector = Sector(radius=2*2.54, sweep_angle=90, **sector_kwargs)
+    sector = Sector(radius=2*2.54, sweep_angle=90, **Temp.SAMPLE)
     
     spot = Spot(beam_diameter=0.3, angle_incident=65)
     mp = MapPattern(xy, np.array([0.5, 2.5]), theta_offset=41)
@@ -228,12 +227,11 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
     
-    DXF.plot(stage_file, ax)
+    DXF.plot(stage_file, ax, **Temp.STAGE)
 
     sector.plot(ax)
 
-    ell_kwargs = Temp.SPOT
-    sc.plot(ax, as_ellipse=True, **ell_kwargs)
+    sc.plot(ax, as_ellipse=True, **Temp.SPOT)
 
     ax.scatter(xy[0, :], xy[1, :])
 

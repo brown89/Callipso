@@ -1,15 +1,15 @@
 SPOT = {
     'edgecolor': '#f0027f',
     'facecolor': '#009dff',
-    'linewidth': 0.5,
+    'linewidth': 1,
     'zorder': 10,    
 }
 
 SAMPLE = {
     'edgecolor': '#666666',
-    'facecolor': '#ffffff',
+    'facecolor': '#cccccc',
     'fill': True,
-    'linewidth': 0.5,
+    'linewidth': 1,
     'zorder': 5,    
 }
 
