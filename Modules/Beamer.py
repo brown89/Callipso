@@ -204,14 +204,23 @@ class SpotCollection:
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
+    import Templates as Temp
+    from ShapeShadow import Sector
+    from dotenv import load_dotenv
+    import DXF
+    import os
 
+    load_dotenv()
+
+    stage_file = os.getenv('STAGE_FILE')    
     xy = np.array([
         [0, 0, 1, 1],
         [0, 1, 1, 0]
         ])
     
-    #c = [0.1, 0.25, 0.55, 0.8]
-
+    sector_kwargs = Temp.SAMPLE
+    sector = Sector(radius=2*2.54, sweep_angle=90, **sector_kwargs)
+    
     spot = Spot(beam_diameter=0.3, angle_incident=65)
     mp = MapPattern(xy, np.array([0.5, 2.5]), theta_offset=41)
 
@@ -219,10 +228,11 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
     
-    ell_kwargs = {
-        'facecolor': 'b',
-        'edgecolor': 'r',
-    }
+    DXF.plot(stage_file, ax)
+
+    sector.plot(ax)
+
+    ell_kwargs = Temp.SPOT
     sc.plot(ax, as_ellipse=True, **ell_kwargs)
 
     ax.scatter(xy[0, :], xy[1, :])
