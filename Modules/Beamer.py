@@ -219,7 +219,11 @@ if __name__ == '__main__':
 
     fig, ax = plt.subplots()
     
-    sc.plot(ax, color='r', as_ellipse=True)
+    ell_kwargs = {
+        'facecolor': 'b',
+        'edgecolor': 'r',
+    }
+    sc.plot(ax, as_ellipse=True, **ell_kwargs)
 
     ax.scatter(xy[0, :], xy[1, :])
 
