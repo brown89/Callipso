@@ -1,13 +1,57 @@
 import numpy as np
+from matplotlib.axes import Axes
+
 
 if __name__ == '__main__':
-    from ShapeShadow import Move, Ellipse
+    from ShapeShadow import Ellipse
 
 else:
-    from Modules.ShapeShadow import Move, Ellipse
+    from Modules.ShapeShadow import Ellipse
 
 
-class Spot(Ellipse):
+class Transform:
+
+    @staticmethod
+    def check_dim(array:np.ndarray) -> bool:
+        if not isinstance(array, np.ndarray):
+            raise ValueError(f"Expeced numpy.array, was given: {type(array)}")
+        
+        if array.shape[0] != 2:
+            return False
+        else:
+            return True
+        
+
+    @staticmethod
+    def rotate(center:np.ndarray, angle:float) -> list[float, float]:
+        Transform.check_dim(center)
+
+        def rotator(array2d:np.ndarray) -> np.ndarray:
+            rad = np.deg2rad(angle)
+            A = np.array([
+                [np.cos(rad), -np.sin(rad)],
+                [np.sin(rad), np.cos(rad)]
+            ])
+
+            return A.dot(array2d)
+        
+        return np.apply_along_axis(rotator, axis=0, arr=center)
+    
+    
+    @staticmethod
+    def translate(center:np.ndarray, offset:list[float, float]) -> np.ndarray:
+        Transform.check_dim(center)
+
+        def translator(array2d:np.ndarray) -> np.ndarray:
+            return offset + array2d
+        
+        return np.apply_along_axis(translator, axis=0, arr=center)
+    
+
+    
+
+
+class Spot:
     @staticmethod
     def angle_check(angle_incident:float) -> float:
         """
@@ -21,7 +65,7 @@ class Spot(Ellipse):
 
 
     @staticmethod
-    def _major_(angle_incident:float, minor:float) -> float:
+    def major(angle_incident:float, minor:float) -> float:
         """
         Calculates the major in an ellipse
         """
@@ -35,13 +79,9 @@ class Spot(Ellipse):
         """
         
         angle_incident = Spot.angle_check(angle_incident)
-        minor = beam_diameter
-        major = self._major_(angle_incident, beam_diameter)
         
         self.diameter = beam_diameter
         self.angle_incident = angle_incident
-
-        super(Spot, self).__init__(major, minor)
         
         return None
     
@@ -51,12 +91,37 @@ class Spot(Ellipse):
         Return: elongation of the spot
         """
         
-        return self.diameter / np.cos(np.deg2rad(self.angle_incident))
+        return Spot.major(self.angle_incident, self.diameter)
+    
 
+    def get_patch(self, x:float, y:float, **kwargs) -> Ellipse:
+        kwargs = {
+            'fill': False,
+            'edgecolor': 'k',
+            'linewidth': 1,
+            'zorder': 1,
+        }
+        ellipse = Ellipse(x, y, self.elongation(), self.diameter, 0, **kwargs)
+        
+        return ellipse
+    
+
+    def plot(self, axes:Axes, x:float, y:float, **kwargs) -> None:
+        axes.add_patch(self.get_patch(x, y, **kwargs))
+
+        return None
+    
+
+    def area(self) -> float:
+        """
+        Return the area of the spot
+        """
+        return np.pi * self.diameter * self.elongation()
 
     
+
 class MapPattern:
-    def __init__(self, x:np.ndarray, y:np.ndarray, x_offset:float, y_offset:float, theta_offset:float) -> None:
+    def __init__(self, xy:np.ndarray, xy_offset:np.ndarray, theta_offset:float) -> None:
         """
         x: x coordinates of the map pattern 
         y: y coordinates of the map pattern
@@ -65,26 +130,12 @@ class MapPattern:
         theta_offset: theta angle offset in degrees
         """
         
-        self.x = x
-        self.y = y
-        
-        self.x_offset = x_offset
-        self.y_offset = y_offset
-        self.theta_offset = theta_offset
+        self.xy = xy
+        self.xy_offset = xy_offset
+        self.t_offset = theta_offset
 
-        self.x_inst: np.ndarray
-        self.y_inst: np.ndarray
-
-        self._gen_instrument_xy_()
-        
         return None
     
-
-    def _gen_instrument_xy_(self):
-        x, y = Move.rotate(self.theta_offset, self.x, self.y)
-        self.x_inst, self.y_inst = Move.translate(self.x_offset, self.y_offset, x, y)
-
-        return None
 
     def count(self) -> int:
         """
@@ -94,15 +145,13 @@ class MapPattern:
         return len(self.x)
     
 
-    def offset(self) -> list[np.ndarray, np.ndarray]:
-        """
-        Applies the map pattern offset and returns two np.ndarrays with x and y coordinates
-        
-        NOTE: Data is NOT overwritten
-        """
-        
-        return self.x_inst, self.y_inst
+    def xy_instrument(self):
+        xy = self.xy
 
+        xy = Transform.rotate(xy, self.t_offset)
+        xy = Transform.translate(xy, self.xy_offset)
+
+        return xy
 
 
 class SpotCollection:
@@ -125,7 +174,7 @@ class SpotCollection:
         return self.map_pattern.count() * self.spot.area()
     
 
-    def outlines(self) -> list[Ellipse]:
+    def plot(self, axes:Axes, as_ellipse=False, **kwargs) -> None:
         """
         Returns a list of Ellipse objects centered on the coordiantes specified in the supplied MapPatternf
 
@@ -136,19 +185,43 @@ class SpotCollection:
         major = self.spot.elongation()
         minor = self.spot.diameter
 
-        xs, ys = self.map_pattern.offset()  # Applying offset
+        xy = self.map_pattern.xy_instrument()  # Applying offset
+        
+        if as_ellipse:
+            for row in xy.T:
+                ellipse = Ellipse(width=major, height=minor, **kwargs)  # Creating object
+                ellipse.translate(row)  # Centering ellipse on map pattern
 
-        ellipse_obj = []
-        for x, y in zip(xs, ys):
-            ellipse = Ellipse(major=major, minor=minor)  # Creating object
-            ellipse.translate(x, y)  # Centering ellipse on map pattern
+                ellipse.plot(axes)
+        
+        else:
+            axes.scatter(xy[0,:], xy[1,:])
 
-            ellipse_obj.append(ellipse)
-
-        return ellipse_obj
+        return None
     
 
 
 
 if __name__ == '__main__':
-    print("This is a test")
+    import matplotlib.pyplot as plt
+
+    xy = np.array([
+        [0, 0, 1, 1],
+        [0, 1, 1, 0]
+        ])
+    
+    #c = [0.1, 0.25, 0.55, 0.8]
+
+    spot = Spot(beam_diameter=0.3, angle_incident=65)
+    mp = MapPattern(xy, np.array([0.5, 2.5]), theta_offset=41)
+
+    sc = SpotCollection(mp, spot)
+
+    fig, ax = plt.subplots()
+    
+    sc.plot(ax, color='r', as_ellipse=True)
+
+    ax.scatter(xy[0, :], xy[1, :])
+
+    ax.set_aspect("equal")
+    plt.show()
