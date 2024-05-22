@@ -104,20 +104,18 @@ class Ellipse(Shape):
 
     
 
-    def get_patch(self, c=None) -> patches.Patch:
+    def get_patch(self) -> patches.Patch:
         return patches.Ellipse(
             xy=self.center,
             width=self.width,
             height=self.height,
             angle=self.angle,
-            edgecolor='k',
-            facecolor=None,
             **self.kwargs
         )
     
 
-    def plot(self, axes:Axes, c=None) -> None:
-        axes.add_patch(self.get_patch(c))
+    def plot(self, axes:Axes) -> None:
+        axes.add_patch(self.get_patch())
 
         return None
     
@@ -165,16 +163,22 @@ class Sector(Shape):
         return None
 
 
+
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     kwargs = {'fill': False}
-    circle = Circle(0.1, 0.25, 0.5, **kwargs)
-    ellipse = Ellipse(-0.2, -0.125, 0.3, 0.45, 30)
+    circle = Circle(0.1, **kwargs)
+    circle.translate([0.25, 0.5])
+    ellipse = Ellipse(0.3, 0.45)
+    ellipse.rotate(30).translate([-0.2, -0.125])
 
     fig, ax = plt.subplots()
     circle.plot(ax)
     ellipse.plot(ax)
 
+    ax.set_xlim([-1, 1])
+    ax.set_ylim([-1, 1])
     ax.set_aspect("equal")
+
     plt.show()
