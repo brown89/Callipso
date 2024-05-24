@@ -47,7 +47,7 @@ class Transform:
 
 class Shape(ABC):
     def __init__(self) -> None:
-        self.center: np.ndarray = np.array([[0], [0]])
+        self.center: np.ndarray = np.array([0, 0]).T
         self.angle: float = 0
         
         return None
@@ -64,7 +64,8 @@ class Shape(ABC):
         return None
     
 
-    def translate(self, offset:np.ndarray):
+    def translate(self, x:float, y:float):
+        offset = np.array([x, y]).T
         self.center = Transform.translate(self.center, offset)
 
         return self
@@ -112,55 +113,48 @@ class Ellipse(Shape):
             angle=self.angle,
             **self.kwargs
         )
+        
+
+
+class Rectangle(Shape):
+    def __init__(self, width:float, height:float, centered:bool=False, **kwargs):
+        self.width = width
+        self.height = height
+        self.kwargs = kwargs
+        
+        super().__init__()
+
+        if centered:
+            self.center = self.center - np.array([self.width/2, self.height/2]).T
+
     
 
-    def plot(self, axes:Axes) -> None:
-        axes.add_patch(self.get_patch())
-
-        return None
-    
+    def get_patch(self) -> patches.Patch:
+        return patches.Rectangle(
+            xy=self.center,
+            width=self.width,
+            height=self.height,
+            angle=self.angle,
+            **self.kwargs,
+        )
 
 class Sector(Shape):
     def __init__(self, radius:float, sweep_angle:float, **kwargs):
-        self.x = 0
-        self.y = 0
-        self.start_angle = 0
-
         self.radius = radius
-        self.end_angle = sweep_angle
+        self.sweep_angle = sweep_angle
         self.kwargs = kwargs
 
         super().__init__()
 
     
-    def rotate(self, angle:float):
-        self.start_angle += angle
-        self.end_angle += angle
-
-        return self
-    
-
-    def translate(self, x_offset:float, y_offset:float):
-        self.x += x_offset
-        self.y += y_offset
-
-        return self
-    
-
     def get_patch(self) -> patches.Patch:
         return patches.Wedge(
-            center=[self.x, self.y],
+            center=self.center,
             r=self.radius,
-            theta1=self.start_angle,
-            theta2=self.end_angle,
+            theta1=self.angle,
+            theta2=self.angle + self.sweep_angle,
             **self.kwargs
         )
-    
-
-    def plot(self, axes:Axes) -> None:
-        axes.add_patch(self.get_patch())
-
-        return None
 
 
 

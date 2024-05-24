@@ -190,12 +190,12 @@ class SpotCollection:
         if as_ellipse:
             for row in xy.T:
                 ellipse = Ellipse(width=major, height=minor, **kwargs)  # Creating object
-                ellipse.translate(row)  # Centering ellipse on map pattern
+                ellipse.translate(row[0], row[1])  # Centering ellipse on map pattern
 
                 ellipse.plot(axes)
         
         else:
-            axes.scatter(xy[0,:], xy[1,:])
+            axes.scatter(xy[0,:], xy[1,:], zorder=10)
 
         return None
     
