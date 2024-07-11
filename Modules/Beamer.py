@@ -1,14 +1,18 @@
 import numpy as np
 from matplotlib.axes import Axes
 
+import os
+import sys
+# Get the current script's directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the parent directory by going one level up
+parent_dir = os.path.dirname(current_dir)
+# Add the parent directory to sys.path
+sys.path.append(parent_dir)
 
-if __name__ in "__main__":
-    from ShapeShadow import Ellipse
-    from Transform import rotate, translate
+from Utilities.Transform import rotate, translate
+from Modules.ShapeShadow import Ellipse
 
-else:
-    from Modules.ShapeShadow import Ellipse
-    from Modules.Transform import rotate, translate
 
 
 class Spot(Ellipse):
@@ -62,7 +66,6 @@ class Spot(Ellipse):
         return self.width
 
 
-    
 
 class MapPattern:
     def __init__(self, x:list[float], y:list[float], x_offset:float, y_offset:float, theta_offset:float) -> None:
@@ -91,19 +94,21 @@ class MapPattern:
         return self.xy.shape[1]
     
 
-    def xy_instrument(self):
+    def xy_instrument(self) -> np.ndarray:
         """
-        Returns the x- and y-coordinates of the instrument
-        
-        - returns: list[x], list[y]
+        Returns the x- and y-coordinates of the instrument.
+        Dimensions [2, N]
+
+        - returns: np.ndarray
         """
         
-        xy = self.xy.copy()
+        xy_inst = self.xy.copy()
 
-        xy = rotate(xy, self.t_offset)
-        xy = translate(xy, self.xy_offset)
+        xy_inst = rotate(xy_inst, self.t_offset)
+        xy_inst = translate(xy_inst, self.xy_offset)
 
-        return xy[0,:], xy[1,:]
+        return xy_inst
+
 
 
 class SpotCollection:
@@ -165,15 +170,23 @@ if __name__ == '__main__':
     load_dotenv()
 
     stage_file = os.getenv('STAGE_FILE')    
-    xy = np.array([
-        [0, 0, 1, 1],
-        [0, 1, 1, 0]
-        ])
+    x = [0, 0, 1, 1]
+    y = [0, 1, 1, 0]
+
     
     sector = Sector(radius=2*2.54, sweep_angle=90)
     
-    spot = Spot(beam_diameter=0.3, angle_incident=65)
-    mp = MapPattern(xy, np.array([0.5, 2.5]), theta_offset=41)
+    spot = Spot(
+        beam_diameter=0.3, 
+        angle_incident=65
+    )
+    mp = MapPattern(
+        x=x, 
+        y=y, 
+        x_offset=0.5, 
+        y_offset=2.5, 
+        theta_offset=41
+    )
 
     sc = SpotCollection(mp, spot)
 
@@ -185,7 +198,7 @@ if __name__ == '__main__':
 
     sc.plot(ax, as_ellipse=True, **Temp.SPOT)
 
-    ax.scatter(xy[0, :], xy[1, :])
+    ax.scatter(x, y)
 
     ax.set_aspect("equal")
     plt.show()

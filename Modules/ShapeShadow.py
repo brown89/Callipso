@@ -3,12 +3,16 @@ import numpy as np
 from matplotlib.axes import Axes
 from matplotlib import patches
 
+import os
+import sys
+# Get the current script's directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# Get the parent directory by going one level up
+parent_dir = os.path.dirname(current_dir)
+# Add the parent directory to sys.path
+sys.path.append(parent_dir)
 
-if __name__ == '__main__':
-    from Transform import rotate, translate
-
-else:
-    from Modules.Transform import rotate, translate
+from Utilities.Transform import rotate, translate
 
 
 class Shape(ABC):
