@@ -2,60 +2,21 @@ import numpy as np
 from matplotlib.axes import Axes
 
 
-if __name__ == '__main__':
+if __name__ in "__main__":
     from ShapeShadow import Ellipse
+    from Transform import rotate, translate
 
 else:
     from Modules.ShapeShadow import Ellipse
+    from Modules.Transform import rotate, translate
 
 
-class Transform:
-
-    @staticmethod
-    def check_dim(array:np.ndarray) -> bool:
-        if not isinstance(array, np.ndarray):
-            raise ValueError(f"Expeced numpy.array, was given: {type(array)}")
-        
-        if array.shape[0] != 2:
-            return False
-        else:
-            return True
-        
-
-    @staticmethod
-    def rotate(center:np.ndarray, angle:float) -> list[float, float]:
-        Transform.check_dim(center)
-
-        def rotator(array2d:np.ndarray) -> np.ndarray:
-            rad = np.deg2rad(angle)
-            A = np.array([
-                [np.cos(rad), -np.sin(rad)],
-                [np.sin(rad), np.cos(rad)]
-            ])
-
-            return A.dot(array2d)
-        
-        return np.apply_along_axis(rotator, axis=0, arr=center)
-    
-    
-    @staticmethod
-    def translate(center:np.ndarray, offset:list[float, float]) -> np.ndarray:
-        Transform.check_dim(center)
-
-        def translator(array2d:np.ndarray) -> np.ndarray:
-            return offset + array2d
-        
-        return np.apply_along_axis(translator, axis=0, arr=center)
-    
-
-    
-
-
-class Spot:
+class Spot(Ellipse):
     @staticmethod
     def angle_check(angle_incident:float) -> float:
         """
-        Function for checking incident angle. Angle equal to 90 or above will be modulated by 90, i.e. 105 deg -> 15 deg
+        Function for checking incident angle. 
+        Angle equal to 90 or above will be modulated by 90, i.e. 105 deg -> 15 deg
         """
         if angle_incident >= 90:
             angle_incident = angle_incident % 90
@@ -74,64 +35,47 @@ class Spot:
 
     def __init__(self, beam_diameter:float, angle_incident:float) -> None:
         """
-        diameter: diameter of the spot at 0 deg incident
-        angle_incident: angle of incident in degrees
+        Spot holdes all information in relation to the beam.
+        Inherents from 'Ellipse'
+
+        - beam_diameter: diameter of the spot at 0 deg incident
+        - angle_incident: angle of incident in degrees
         """
         
         angle_incident = Spot.angle_check(angle_incident)
-        
+                
         self.diameter = beam_diameter
         self.angle_incident = angle_incident
         
+        height = beam_diameter
+        width = Spot.major(angle_incident, beam_diameter)
+
+        super().__init__(width, height)
         return None
     
     
     def elongation(self) -> float:
         """
-        Return: elongation of the spot
+        Return: elongation of the spot i.e. major of an ellipse.
         """
         
-        return Spot.major(self.angle_incident, self.diameter)
-    
+        return self.width
 
-    def get_patch(self, x:float, y:float, **kwargs) -> Ellipse:
-        kwargs = {
-            'fill': False,
-            'edgecolor': 'k',
-            'linewidth': 1,
-            'zorder': 1,
-        }
-        ellipse = Ellipse(x, y, self.elongation(), self.diameter, 0, **kwargs)
-        
-        return ellipse
-    
-
-    def plot(self, axes:Axes, x:float, y:float, **kwargs) -> None:
-        axes.add_patch(self.get_patch(x, y, **kwargs))
-
-        return None
-    
-
-    def area(self) -> float:
-        """
-        Return the area of the spot
-        """
-        return np.pi * self.diameter * self.elongation()
 
     
 
 class MapPattern:
-    def __init__(self, xy:np.ndarray, xy_offset:np.ndarray, theta_offset:float) -> None:
+    def __init__(self, x:list[float], y:list[float], x_offset:float, y_offset:float, theta_offset:float) -> None:
         """
-        x: x coordinates of the map pattern 
-        y: y coordinates of the map pattern
-        x_offset: x offset
-        y_offset: y offset
-        theta_offset: theta angle offset in degrees
+        - x: x coordinates of the map pattern 
+        - y: y coordinates of the map pattern
+        - x_offset: x offset
+        - y_offset: y offset
+        - theta_offset: theta angle offset in degrees
         """
         
-        self.xy = xy
-        self.xy_offset = xy_offset
+        self.xy = np.array([x, y])
+        self.xy_offset = np.array([x_offset, y_offset])
         self.t_offset = theta_offset
 
         return None
@@ -140,18 +84,26 @@ class MapPattern:
     def count(self) -> int:
         """
         Returns the number of measurements
+
+        - returns: int
         """
         
-        return len(self.x)
+        return self.xy.shape[1]
     
 
     def xy_instrument(self):
-        xy = self.xy
+        """
+        Returns the x- and y-coordinates of the instrument
+        
+        - returns: list[x], list[y]
+        """
+        
+        xy = self.xy.copy()
 
-        xy = Transform.rotate(xy, self.t_offset)
-        xy = Transform.translate(xy, self.xy_offset)
+        xy = rotate(xy, self.t_offset)
+        xy = translate(xy, self.xy_offset)
 
-        return xy
+        return xy[0,:], xy[1,:]
 
 
 class SpotCollection:
@@ -189,10 +141,10 @@ class SpotCollection:
         
         if as_ellipse:
             for row in xy.T:
-                ellipse = Ellipse(width=major, height=minor, **kwargs)  # Creating object
+                ellipse = Ellipse(width=major, height=minor)  # Creating object
                 ellipse.translate(row[0], row[1])  # Centering ellipse on map pattern
 
-                ellipse.plot(axes)
+                ellipse.plot(axes, as_patch=True, **kwargs)
         
         else:
             axes.scatter(xy[0,:], xy[1,:], zorder=10)
@@ -218,7 +170,7 @@ if __name__ == '__main__':
         [0, 1, 1, 0]
         ])
     
-    sector = Sector(radius=2*2.54, sweep_angle=90, **Temp.SAMPLE)
+    sector = Sector(radius=2*2.54, sweep_angle=90)
     
     spot = Spot(beam_diameter=0.3, angle_incident=65)
     mp = MapPattern(xy, np.array([0.5, 2.5]), theta_offset=41)
@@ -229,7 +181,7 @@ if __name__ == '__main__':
     
     DXF.plot(stage_file, ax, **Temp.STAGE)
 
-    sector.plot(ax)
+    sector.plot(ax, as_patch=True, **Temp.SAMPLE)
 
     sc.plot(ax, as_ellipse=True, **Temp.SPOT)
 

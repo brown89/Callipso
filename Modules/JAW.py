@@ -93,7 +93,7 @@ def _extract_xy_coordinates_(dataframe:pd.DataFrame) -> pd.DataFrame:
     return dataframe
 
 
-def read_jaw_file(filename:str) -> pd.DataFrame:
+def read_file(filename:str) -> pd.DataFrame:
     """
     Function for reading the text version of the J.A.Woollam files
 
