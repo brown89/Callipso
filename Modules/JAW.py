@@ -1,37 +1,13 @@
 import os
-import re
 import pandas as pd
-from matplotlib.axes import Axes
+
+from Readers._text_reader import text_reader
+from Readers._scan_reader import ScanFile, scan_reader
 
 
 # Ellipsometer specific constants
 BEAM_SIZE_WITH_FOCUS_PROBES = 0.03
 BEAM_SIZE_WITHOUT_FOCUS_PROBES = 0.3
-
-
-# Types of supported file formats
-SUPPORTED_FILE_EXTENSIONS = [
-    '*.txt',
-]
-
-
-# Header renaming schema
-HEAD_NAMES = {
-    'Point #': 'n_points',
-    'Z Align': 'z_align',
-    'SigInt': 'sig_int',
-    'Tilt X': 'tilt_x',
-    'Tilt Y': 'tilt_y',
-    'Hardware OK': 'hardware_ok',
-    'MSE': 'mse',
-    'Thickness # 1 (nm)': 'thickness_nm',
-    'n of Cauchy @ 632.8 nm': 'n_cauchy_632nm',
-    'A': 'a',
-    'B': 'b',
-    'C': 'c',
-    'Fit OK': 'fit_ok', 
-}
-
 
 
 def is_valid(filename:str) -> bool:
@@ -57,45 +33,19 @@ def is_valid(filename:str) -> bool:
     return True
 
 
-def first_line_of_data(filename:str, match_pattern:str) -> int:
+#----------------------------------------------------------------
+# *.txt file reader
+#----------------------------------------------------------------
+
+# Types of supported file formats
+SUPPORTED_FILE_EXTENSIONS = [
+    '*.txt',
+]
+
+
+def read_text_file(filename:str) -> pd.DataFrame:
     """
-    Finds the line where data begins.
-    """
-    # Read file line by line
-    with open(filename, 'r') as f:
-        file = f.readlines()
-    
-    # Loops through lines in file
-    start_of_data: int
-    for i, line in enumerate(file):
-
-        # Stops if first character is a match for 'match_pattern'
-        if line[0] == match_pattern:
-            start_of_data = i
-            break
-    
-    return start_of_data
-    
-
-def _extract_xy_coordinates_(dataframe:pd.DataFrame) -> pd.DataFrame:
-    # Add x and y column
-    x_list, y_list = [], []
-    for xy in dataframe.iloc[:, 0].values.tolist():
-        x, y = re.findall(r"[-+]?(?:\d*\.*\d+)", xy)
-        
-        x_list.append(float(x))
-        y_list.append(float(y))
-
-    # Setting new columns with x and y values
-    dataframe['x'] = x_list
-    dataframe['y'] = y_list
-
-    return dataframe
-
-
-def read_file(filename:str) -> pd.DataFrame:
-    """
-    Function for reading the text version of the J.A.Woollam files
+    Function for reading the text version of the J.A.Woollam *.SE files
 
     Headers are renamed according with the HEAD_NAMES
 
@@ -104,19 +54,22 @@ def read_file(filename:str) -> pd.DataFrame:
 
     # Check if filename is valid
     is_valid(filename)
-    
-    # Find where data starts
-    start_of_data = first_line_of_data(filename, '(')
 
-    # Read file into DataFrame
-    data = pd.read_csv(filename, sep="\t", header=0, skiprows=range(1, start_of_data))
-    
-    # Extract x and y coordinates
-    data = _extract_xy_coordinates_(data)
+    dataframe = text_reader(filename)
 
-    # Drops 1st column with old (x, y) coordinates
-    data.drop(columns=data.columns[0], axis=1,  inplace=True)
+    return dataframe
 
-    data.rename(mapper=str.strip, axis='columns')
 
-    return data.rename(mapper=HEAD_NAMES, axis='columns')
+#----------------------------------------------------------------
+# *.SCAN file_reader
+#----------------------------------------------------------------
+
+
+def read_scan_file(filename:str) -> ScanFile:
+
+    # Check validity of file
+    is_valid(filename)
+
+    scan_file = scan_reader(filename)
+
+    return scan_file
