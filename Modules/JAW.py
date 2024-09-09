@@ -1,14 +1,21 @@
 import os
 import re
 import pandas as pd
+from matplotlib.axes import Axes
 
 
 # Ellipsometer specific constants
 BEAM_SIZE_WITH_FOCUS_PROBES = 0.03
 BEAM_SIZE_WITHOUT_FOCUS_PROBES = 0.3
 
-SUPPORTED_FILE_EXTENSIONS = ['*.txt']
 
+# Types of supported file formats
+SUPPORTED_FILE_EXTENSIONS = [
+    '*.txt',
+]
+
+
+# Header renaming schema
 HEAD_NAMES = {
     'Point #': 'n_points',
     'Z Align': 'z_align',
@@ -18,11 +25,13 @@ HEAD_NAMES = {
     'Hardware OK': 'hardware_ok',
     'MSE': 'mse',
     'Thickness # 1 (nm)': 'thickness_nm',
+    'n of Cauchy @ 632.8 nm': 'n_cauchy_632nm',
     'A': 'a',
     'B': 'b',
     'C': 'c',
     'Fit OK': 'fit_ok', 
 }
+
 
 
 def is_valid(filename:str) -> bool:
@@ -48,9 +57,10 @@ def is_valid(filename:str) -> bool:
     return True
 
 
-def _first_line_of_data_(filename:str, match_pattern:str) -> int:
+def first_line_of_data(filename:str, match_pattern:str) -> int:
     """
-    Finds the line where data begins."""
+    Finds the line where data begins.
+    """
     # Read file line by line
     with open(filename, 'r') as f:
         file = f.readlines()
@@ -83,7 +93,7 @@ def _extract_xy_coordinates_(dataframe:pd.DataFrame) -> pd.DataFrame:
     return dataframe
 
 
-def read_jaw_file(filename:str) -> pd.DataFrame:
+def read_file(filename:str) -> pd.DataFrame:
     """
     Function for reading the text version of the J.A.Woollam files
 
@@ -96,7 +106,7 @@ def read_jaw_file(filename:str) -> pd.DataFrame:
     is_valid(filename)
     
     # Find where data starts
-    start_of_data = _first_line_of_data_(filename, '(')
+    start_of_data = first_line_of_data(filename, '(')
 
     # Read file into DataFrame
     data = pd.read_csv(filename, sep="\t", header=0, skiprows=range(1, start_of_data))
@@ -107,4 +117,6 @@ def read_jaw_file(filename:str) -> pd.DataFrame:
     # Drops 1st column with old (x, y) coordinates
     data.drop(columns=data.columns[0], axis=1,  inplace=True)
 
-    return data.rename(HEAD_NAMES)
+    data.rename(mapper=str.strip, axis='columns')
+
+    return data.rename(mapper=HEAD_NAMES, axis='columns')
