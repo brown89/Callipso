@@ -1,6 +1,15 @@
 import os
 import pandas as pd
 
+import os
+import sys
+
+# Get the current script's directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Add the current directory to sys.path
+sys.path.append(current_dir)
+
 from Readers._text_reader import text_reader
 from Readers._scan_reader import ScanFile, scan_reader
 
